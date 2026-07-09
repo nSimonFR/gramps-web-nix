@@ -13,14 +13,14 @@
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" "aarch64-linux" ];
 
-      perSystem = { pkgs, ... }:
+      perSystem = { pkgs, system, ... }:
         let
           pythonSet = import ./pkgs/python-set.nix pkgs;
         in
         {
           packages.gramps-web     = pkgs.callPackage ./pkgs/frontend.nix { };
           packages.gramps-web-api = pythonSet.pkgs.gramps-web-api;
-          packages.default        = self.packages.${pkgs.system}.gramps-web;
+          packages.default        = self.packages.${system}.gramps-web;
         };
 
       flake = {
