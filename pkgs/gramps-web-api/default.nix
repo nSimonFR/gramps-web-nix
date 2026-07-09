@@ -34,6 +34,7 @@
   pillow,
   pygobject3,
   pytesseract,
+  redis,
   requests,
   sifts,
   sqlalchemy,
@@ -107,6 +108,7 @@ buildPythonPackage rec {
     pillow
     pygobject3
     pytesseract
+    redis # celery[redis] broker/result backend — the redis python client
     requests
     sifts
     sqlalchemy
