@@ -8,7 +8,7 @@
     {
       "description": "Track gramps-web (frontend) releases in pkgs/frontend.nix",
       "customType": "regex",
-      "fileMatch": ["^pkgs/frontend\\.nix$"],
+      "managerFilePatterns": ["/^pkgs/frontend\\.nix$/"],
       "matchStrings": [
         "version\\s*=\\s*\"(?<currentValue>[^\"]+)\";"
       ],
@@ -19,7 +19,7 @@
     {
       "description": "Track gramps-web-api releases in pkgs/gramps-web-api/default.nix",
       "customType": "regex",
-      "fileMatch": ["^pkgs/gramps-web-api/default\\.nix$"],
+      "managerFilePatterns": ["/^pkgs/gramps-web-api/default\\.nix$/"],
       "matchStrings": [
         "version\\s*=\\s*\"(?<currentValue>[^\"]+)\";"
       ],
@@ -36,10 +36,15 @@
       "schedule": ["every weekend"]
     },
     {
-      "description": "Upstream bumps need src + npmDepsHash rehash by hand (see README)",
+      "description": "Upstream bumps — ci/renovate-update.sh recomputes src (+ frontend npmDepsHash) so each PR is build-ready",
       "matchDepNames": ["gramps-project/gramps-web", "gramps-project/gramps-web-api"],
       "automerge": false,
-      "schedule": ["at any time"]
+      "schedule": ["at any time"],
+      "postUpgradeTasks": {
+        "commands": ["bash ci/renovate-update.sh {{{depName}}} {{{newVersion}}}"],
+        "executionMode": "branch",
+        "fileFilters": ["**/*"]
+      }
     }
   ]
 }
