@@ -49,14 +49,14 @@
 
 buildPythonPackage rec {
   pname = "gramps-web-api";
-  version = "3.17.0";
+  version = "3.19.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gramps-project";
     repo = "gramps-web-api";
     tag = "v${version}";
-    hash = "sha256-2tBhYJ9iGN3QPyXqlarQ0QAybpd19X1TfuARAEaZ/2g=";
+    hash = "sha256-m/BhjfHKPfG2evW+3KKTw98k8izoGX+EVzp946bZ1fI=";
   };
 
   patches = [
