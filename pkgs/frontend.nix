@@ -6,16 +6,16 @@
 
 buildNpmPackage (finalAttrs: {
   pname = "gramps-web";
-  version = "26.6.2";
+  version = "26.9.1";
 
   src = fetchFromGitHub {
     owner = "gramps-project";
     repo = "gramps-web";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-hoEYV7sXHqibxmFJptbHgVTDppM2+Q7njA75UJClKlQ=";
+    hash = "sha256-ej2uTYfdw0as31Xg5yXwpHl8OVJAzVFnTTnA/q3I4Nk=";
   };
 
-  npmDepsHash = "sha256-cV5wM0xIRnNBiF94J+93S0El5oVT6TMoe3sntVHbkKM=";
+  npmDepsHash = "sha256-Wm4+0GihvvcBXs1oaaBzmKrS5/sqCUeoBrU9LlUDMgU=";
 
   installPhase = ''
     runHook preInstall
