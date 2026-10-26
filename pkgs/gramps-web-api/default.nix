@@ -68,6 +68,14 @@ buildPythonPackage rec {
     ./instance-path.patch
   ];
 
+  # pkg_resources (setuptools) is no longer in the runtime closure; upstream dropped it after
+  # 3.2.0 (gramps-web-api#690), but that patch doesn't apply here.
+  postPatch = ''
+    substituteInPlace gramps_webapi/const.py gramps_webapi/api/image.py \
+      --replace-fail "from pkg_resources import resource_filename" \
+        "from importlib.resources import files; resource_filename = lambda pkg, path: str(files(pkg) / path)"
+  '';
+
   build-system = [
     setuptools
     setuptools-scm
@@ -158,6 +166,8 @@ buildPythonPackage rec {
 
   pythonImportsCheck = [
     "gramps_webapi"
+    "gramps_webapi.const"
+    "gramps_webapi.api.image"
   ];
 
   meta = {
