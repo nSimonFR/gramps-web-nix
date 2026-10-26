@@ -85,6 +85,8 @@ buildPythonPackage rec {
   pythonRelaxDeps = [ "boto3" "pygobject" ];
 
   dependencies = [
+    # const.py imports pkg_resources at runtime; setuptools is otherwise build-only.
+    setuptools
     alembic
     bleach
     boto3
