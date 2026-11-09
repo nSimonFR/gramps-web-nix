@@ -49,7 +49,7 @@
 
 buildPythonPackage rec {
   pname = "gramps-web-api";
-  version = "3.25.1";
+  version = "3.25.2";
   pyproject = true;
 
   src = fetchFromGitHub {
