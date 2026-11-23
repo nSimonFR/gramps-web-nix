@@ -15,6 +15,15 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-rcgvog9OPIuP0QyWDh8vqkpF/upUtB7FthCHLzG64C0=";
   };
 
+  # CARTO's keyless raster tiles now answer "API KEY REQUIRED". Switch to the
+  # OSM standard layer; releases >= 25.9.0 moved to OpenFreeMap upstream.
+  postPatch = ''
+    substituteInPlace src/components/GrampsjsMap.js \
+      --replace-fail "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" \
+                     "https://tile.openstreetmap.org/{z}/{x}/{y}.png" \
+      --replace-fail "; <a href=\"https://carto.com/attributions\">CARTO</a>" ""
+  '';
+
   npmDepsHash = "sha256-05s6JbH6hCqLNtOKAx4E56xEuHTGdT/957d6Gg4MiKk=";
 
   installPhase = ''
