@@ -12,6 +12,7 @@
   wrapGAppsHook3,
 
   alembic,
+  authlib,
   bleach,
   boto3,
   celery,
@@ -25,22 +26,30 @@
   flask-limiter,
   flask-sqlalchemy,
   gramps,
+  cryptography,
+  flask-smorest,
+  gramps-gedcom7,
+  gramps-object-query-language,
   gramps-ql,
   jsonschema,
+  limits,
   marshmallow,
-  object-ql,
   orjson,
   pdf2image,
   pillow,
+  psycopg2,
+  py-vapid,
   pygobject3,
   pytesseract,
+  pywebpush,
   redis,
   requests,
-  sifts,
   sqlalchemy,
+  typing-extensions,
   unidecode,
   waitress,
   webargs,
+  yclade,
 
   pytestCheckHook,
   pyyaml,
@@ -63,9 +72,6 @@ buildPythonPackage rec {
     # fixes TestMediaArchiv::test_create_archive which tries to use an example
     # zip file from the nix store (which has non-zip compatible timestamps)
     ./remove-zip-timestamp-strictness.patch
-
-    # unsure if this is really needed, but seems to work
-    ./instance-path.patch
   ];
 
   build-system = [
@@ -82,10 +88,15 @@ buildPythonPackage rec {
 
   # boto3: upstream over-pins. pygobject: nixpkgs 25.11 ships 3.54.5 but
   # gramps-web-api pins <=3.50.0 (compatible in practice).
-  pythonRelaxDeps = [ "boto3" "pygobject" ];
+  # pywebpush: nixpkgs has 2.3, upstream wants >= 2.5 (only the push
+  # notification sender uses it).
+  pythonRelaxDeps = [ "boto3" "pygobject" "pywebpush" ];
+  # psycopg2-binary: the same module as nixpkgs' psycopg2.
+  pythonRemoveDeps = [ "psycopg2-binary" ];
 
   dependencies = [
     alembic
+    authlib
     bleach
     boto3
     celery
@@ -99,28 +110,43 @@ buildPythonPackage rec {
     flask-limiter
     flask-sqlalchemy
     gramps
+    cryptography
+    flask-smorest
+    gramps-gedcom7
+    gramps-object-query-language
     gramps-ql
     jsonschema
+    limits
     marshmallow
-    object-ql
     orjson
     pdf2image
     pillow
+    psycopg2
+    py-vapid
     pygobject3
     pytesseract
+    pywebpush
     redis # celery[redis] broker/result backend — the redis python client
     requests
-    sifts
     sqlalchemy
+    typing-extensions
     unidecode
     waitress
     webargs
+    yclade
 
     # NOTE: the upstream PR (#417806) also lists accelerate/openai/
     # sentence-transformers here (its `[ai]` extras). Dropped entirely — they
     # pull in PyTorch, far too heavy for the RPi5, and Gramps Web runs fine
     # without semantic search / chat.
   ] ++ bleach.optional-dependencies.css;
+
+  # The wheel leaves out the user-DB migrations; `gramps_webapi user migrate`
+  # runs `alembic upgrade head` and needs alembic.ini in its working directory.
+  postInstall = ''
+    mkdir -p $out/share/gramps-web-api
+    cp -r alembic.ini alembic_users $out/share/gramps-web-api/
+  '';
 
   nativeCheckInputs = [
     pytestCheckHook
