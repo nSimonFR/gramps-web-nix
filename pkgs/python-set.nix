@@ -1,5 +1,6 @@
 # Returns a python3 whose package set has the Gramps Web packages added
-# (gramps + gramps-ql + object-ql + sifts + gramps-web-api). Self-contained: it
+# (gramps + gramps-ql + gramps-object-query-language + gramps-web-api and the
+# deps nixpkgs lacks). Self-contained: it
 # does NOT mutate the caller's global `python3Packages`, so a host can import the
 # module without every other python package on the system rebuilding.
 #
@@ -22,11 +23,27 @@ let
     doInstallCheck = false;
   });
 
-  grampsOverrides = pyfinal: _pyprev: {
+  grampsOverrides = pyfinal: pyprev: {
     gramps         = noCheck (pyfinal.callPackage ./gramps { });
     gramps-ql      = noCheck (pyfinal.callPackage ./gramps-ql.nix { });
-    object-ql      = noCheck (pyfinal.callPackage ./object-ql.nix { });
-    sifts          = noCheck (pyfinal.callPackage ./sifts.nix { });
+    gramps-object-query-language =
+      noCheck (pyfinal.callPackage ./gramps-object-query-language.nix { });
+    gramps-gedcom7 = noCheck (pyfinal.callPackage ./gramps-gedcom7.nix { });
+    gedcom7        = noCheck (pyfinal.callPackage ./gedcom7.nix { });
+    yclade         = noCheck (pyfinal.callPackage ./yclade.nix { });
+    flask-smorest  = noCheck (pyfinal.callPackage ./flask-smorest.nix { });
+    # gramps-web-api >= 3.25 requires Authlib >= 1.9 (OIDC); some nixpkgs
+    # revisions still ship 1.7.
+    authlib =
+      if pkgs.lib.versionAtLeast pyprev.authlib.version "1.9.0" then pyprev.authlib
+      else noCheck (pyprev.authlib.overridePythonAttrs (_: rec {
+        version = "1.9.10";
+        src = pkgs.fetchPypi {
+          pname = "authlib";
+          inherit version;
+          hash = "sha256-90U8Sj9ZdflMxVIjxNSP+cfY07Tj1yftJUntrrm4XVA=";
+        };
+      }));
     gramps-web-api = noCheck (pyfinal.callPackage ./gramps-web-api { });
   };
 in

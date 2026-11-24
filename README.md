@@ -14,8 +14,10 @@ The derivations are carried from the (still-unmerged) nixpkgs PR [#417806](https
 - **AI extras dropped** — `accelerate`/`openai`/`sentence-transformers` (PyTorch) are removed; Gramps Web runs fine without semantic search / chat and PyTorch is far too heavy for a small self-host.
 - **`doCheck = false`** on the Python packages — the upstream test suites are slow and occasionally network/model-dependent (rough on aarch64 / low-memory hosts); `pythonImportsCheck` still runs.
 - Added the missing `requests` runtime dep and relaxed the `pygobject<=3.50` pin (nixpkgs ships 3.54+).
+- API 3.25 deps nixpkgs lacks are packaged here: `yclade`, `gedcom7`, `gramps-gedcom7`, `flask-smorest`, `gramps-object-query-language`; Authlib is bumped to 1.9 where nixpkgs is older; `psycopg2-binary` is served by `psycopg2`.
+- The user-DB migrations (`alembic.ini`, `alembic_users/`) ship in `share/gramps-web-api`; the module runs `user migrate` from there at every start.
 
-Pinned versions: frontend **25.6.0**, API **3.2.0** (the pairing from the PR).
+Versions: frontend **26.11.0**, API **3.25.1**, Gramps **6.0.8**.
 
 ## AI Installation Prompt
 
@@ -69,8 +71,9 @@ port (reverse proxy / Tailscale Serve) and, if desired, socket-activation.
 ## Options
 
 See `module.nix` for the full set. Key ones: `host`, `port`, `dataDir`,
-`baseUrl`, `redisUrl`, `secretKeyFile`, `tree`, `memoryMax`, `celeryMemoryMax`,
-`settings` (extra `GRAMPSWEB_*` env).
+`baseUrl`, `redisUrl`, `secretKeyFile`, `environmentFile` (secrets such as
+`GRAMPSWEB_OIDC_CLIENT_SECRET`), `tree`, `memoryMax`, `celeryMemoryMax`,
+`settings` (extra `GRAMPSWEB_*` env, e.g. the `GRAMPSWEB_OIDC_*` options for SSO).
 
 ## Bumping versions
 

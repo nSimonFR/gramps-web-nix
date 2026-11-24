@@ -28,7 +28,10 @@ let
   # Self-contained python3 with gramps-web-api + its Gramps deps (see
   # pkgs/python-set.nix — does not touch the host's global python3Packages),
   # plus gunicorn (WSGI server) and celery (its console script).
-  pythonEnv = (import (self + "/pkgs/python-set.nix") pkgs).withPackages (ps: [
+  pythonSet = import (self + "/pkgs/python-set.nix") pkgs;
+  # alembic.ini + alembic_users, which `user migrate` reads from its cwd.
+  migrationsDir = "${pythonSet.pkgs.gramps-web-api}/share/gramps-web-api";
+  pythonEnv = pythonSet.withPackages (ps: [
     ps.gramps-web-api
     ps.gunicorn
     ps.celery
@@ -86,6 +89,8 @@ let
     # Many small hosts (e.g. RPi5) have no user namespaces; nixpkgs' default
     # PrivateUsers=true fails there. Off by default; harden host-side if wanted.
     PrivateUsers = lib.mkForce false;
+  } // lib.optionalAttrs (cfg.environmentFile != null) {
+    EnvironmentFile = "-${cfg.environmentFile}";
   };
 in
 {
@@ -148,6 +153,16 @@ in
       '';
     };
 
+    environmentFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "/run/secrets/gramps-web.env";
+      description = ''
+        systemd EnvironmentFile for both services, for secrets such as
+        GRAMPSWEB_OIDC_CLIENT_SECRET. A missing file is ignored.
+      '';
+    };
+
     memoryMax = lib.mkOption {
       type = lib.types.str;
       default = "384M";
@@ -200,8 +215,8 @@ in
       path = [ pkgs.coreutils ] ++ runtimePkgs;
       environment = commonEnv;
       script = withSecret ''
-        # Idempotent user-DB migration.
-        ${pythonEnv}/bin/python3 -m gramps_webapi user migrate || true
+        # Idempotent user-DB migration (alembic upgrade head).
+        (cd ${migrationsDir} && ${pythonEnv}/bin/python3 -m gramps_webapi user migrate)
         exec "${pythonEnv}/bin/gunicorn" \
           -w 1 \
           -b ${cfg.host}:${toString cfg.port} \
