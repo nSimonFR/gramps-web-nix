@@ -72,6 +72,10 @@ buildPythonPackage rec {
     # fixes TestMediaArchiv::test_create_archive which tries to use an example
     # zip file from the nix store (which has non-zip compatible timestamps)
     ./remove-zip-timestamp-strictness.patch
+    # The frontend starts an OIDC login without a tree, which a multi-tree
+    # setup rejected ("tree is required"), so SSO could never sign in. A linked
+    # account keeps its own tree; an unlinked one is refused, not created.
+    ./oidc-multi-tree-login.patch
   ];
 
   build-system = [
@@ -170,6 +174,10 @@ buildPythonPackage rec {
   ];
 
   disabledTests = [
+    # assert the "tree is required" refusal that oidc-multi-tree-login.patch removes
+    "test_login_requires_tree"
+    "test_callback_without_login_is_refused"
+
     # network access needed
     "test_get_faces"
     "test_get_faces_requires_token"
